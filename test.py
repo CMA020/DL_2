@@ -20,6 +20,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.regularizers import l2
+import csv
 from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
 def generate_spectrogram(audio_path, output_dir):
     # Load the audio file
@@ -78,6 +79,7 @@ def create_model():
 IMG_WIDTH = 150
 IMG_HEIGHT = 150
 BATCH_SIZE = 32
+dict={'0': 12, '1': 3 , '2':11,'3':13 , '4':4 , '5':5 , '6':1 , '7':7 , '8':10 , '9':2 , '10':8 , '11':6 , '12':9  }
 if __name__ == '__main__':
     cnn_model = create_model()
     cnn_model.load_weights(os.path.expanduser("/content/model_weights2.h5"))
@@ -110,6 +112,38 @@ if __name__ == '__main__':
                                                     class_mode='categorical')
 
     predictions = cnn_model.predict(val_generator)
+    with open(os.path.expanduser('/content/drive/MyDrive/1.csv'), mode='w', newline='') as file:
+        writer = csv.writer(file)
+
+        # Write header row
+        writer.writerow(['File Name', 'Prediction'])
+        for folder_name in os.listdir(output_dir):
+            folder_path = os.path.join(parent_dir, folder_name)
+            # os.makedirs(os.path.join(output_dir, folder_name))
+            if os.path.isdir(folder_path):
+                print(f"Folder Name: {folder_name}")
+
+                for audio_file in os.listdir(folder_path):
+                    audio_path = os.path.join(folder_path, audio_file)
+                    print(audio_path)
+                    img = cv2.imread(audio_path)
+                    img = cv2.resize(img, (240, 320))
+                    # Preprocess th audio file (e.g., compute spectrogram)
+                    preprocessed_data = tf.cast(img, tf.float32) / 255.0
+                    print(img.shape)
+
+                    # Create a NumPy array or tensor with the preprocessed data
+                    input_data = np.expand_dims(preprocessed_data, axis=0)
+
+                    # Perform inference
+                    single_prediction = cnn_model.predict(input_data)
+                    predictions = np.argmax(single_prediction, axis=1)
+                    print(dict[str(int(predictions))])
+                    file_name = audio_file.replace('.png', '')
+
+                    # Write the file name and prediction to the CSV file
+                    string1 = file_name + "," + str(dict[str(int(predictions))])
+                    writer.writerow([string1])
 
 
 
