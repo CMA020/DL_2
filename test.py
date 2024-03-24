@@ -102,17 +102,17 @@ if __name__ == '__main__':
                     audio_path = os.path.join(folder_path, audio_file)
                     generate_spectrogram(audio_path, os.path.join(output_dir, folder_name))
 
-    validation_datset_path=output_dir
-    val_datagen = ImageDataGenerator(rescale=1.0 / 255)
-
-    val_generator = val_datagen.flow_from_directory(validation_datset_path,
-                                                    shuffle=False,
-                                                    batch_size=BATCH_SIZE,
-                                                    target_size=(IMG_WIDTH, IMG_HEIGHT),
-                                                    class_mode='categorical')
-
-    predictions = cnn_model.predict(val_generator)
-    with open(os.path.expanduser('/content/drive/MyDrive/1.csv'), mode='w', newline='') as file:    ###W add csv file path 
+    # validation_datset_path=output_dir
+    # val_datagen = ImageDataGenerator(rescale=1.0 / 255)
+    #
+    # val_generator = val_datagen.flow_from_directory(validation_datset_path,
+    #                                                 shuffle=False,
+    #                                                 batch_size=BATCH_SIZE,
+    #                                                 target_size=(IMG_WIDTH, IMG_HEIGHT),
+    #                                                 class_mode='categorical')
+    #
+    # predictions = cnn_model.predict(val_generator)
+    with open(os.path.expanduser('/content/drive/MyDrive/1.csv'), mode='w', newline='') as file:    ###W add csv file path
         writer = csv.writer(file)
 
         # Write header row
