@@ -1,0 +1,145 @@
+from keras.preprocessing import image
+import matplotlib.pyplot as plt
+import os
+from tensorflow.keras.utils import to_categorical
+import numpy as np
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, AveragePooling2D, Dropout, BatchNormalization
+from keras.layers import Flatten, Dense
+from keras.callbacks import Callback
+import tensorflow as tf
+import gc
+#from tensorflow.python.tpu import tpu_function
+from tensorflow.keras.models import load_model
+from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
+physical_devices = tf.config.list_physical_devices('GPU')
+import random
+if physical_devices:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+def load_images_from_path(path, label):
+    images = []
+    labels = []
+
+    for file in os.listdir(path):
+        images.append(image.img_to_array(image.load_img(os.path.join(path, file), target_size=(320, 240, 3))))
+        labels.append(label)
+
+    return images, labels
+class ClearMemoryCallback(Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        tf.keras.backend.clear_session()
+        gc.collect()
+def preprocess_image(image, label):
+    image = tf.cast(image, tf.float32) / 255.0
+    return image, label
+
+if __name__ == '__main__':
+    parent_dir = os.path.expanduser("/content/drive/MyDrive/Train")
+    parent_dir2 = os.path.expanduser("/content/drive/MyDrive/Test")
+    tf.keras.backend.clear_session()
+    #pretrained_model = load_model(os.path.expanduser("/content/model_weights.h5"))
+
+    train_images = []
+    train_labels = []
+    test_images = []
+    test_labels = []
+
+    for i, folder_name in enumerate(os.listdir(parent_dir)):
+
+        folder_path = os.path.join(parent_dir, folder_name)
+        images, labels = load_images_from_path(folder_path, i)
+        num_images = len(images)
+        quarter_len = num_images // 4
+
+# Get a random sample of indices for the quarter of data
+        random_indices = random.sample(range(num_images), quarter_len)
+
+        # Use the random indices to select a quarter of the data
+        train_images.extend([images[i] for i in random_indices])
+        train_labels.extend([labels[i] for i in random_indices])
+
+        folder_path2 = os.path.join(parent_dir2, folder_name)
+
+        images2, labels2 = load_images_from_path(folder_path2, i)
+
+        num_images2 = len(images2)
+        quarter_len2 = num_images2 // 4
+
+# Get a random sample of indices for the quarter of data
+        random_indices2 = random.sample(range(num_images2), quarter_len2)
+        test_images.extend([images[i] for i in random_indices2])
+        test_labels.extend([labels[i] for i in random_indices2])
+        gc.collect()
+
+        print(i, ":", folder_name)
+
+    train_images = np.array(train_images)
+    train_labels = np.array(train_labels)
+    test_images = np.array(test_images)
+    test_labels = np.array(test_labels)
+
+    train_labels_encoded = to_categorical(train_labels, 13)
+    test_labels_encoded = to_categorical(test_labels, 13)
+
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels_encoded))
+    train_dataset = train_dataset.map(preprocess_image, num_parallel_calls=tf.data.AUTOTUNE)
+    train_dataset = train_dataset.shuffle(buffer_size=len(train_images)).batch(6)
+
+    test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels_encoded))
+    test_dataset = test_dataset.map(preprocess_image, num_parallel_calls=tf.data.AUTOTUNE)
+    test_dataset = test_dataset.batch(6)
+
+    gc.collect()
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=np.sqrt(0.1), patience=5)
+
+
+    #tpu_function.get_tpu_context().set_config(experimental_run_tf_rewrite=True)
+    with tf.device('/device:GPU:0'):
+      model = Sequential([
+      Conv2D(32, (3, 3), activation='silu', input_shape=(320, 240, 3)),
+      AveragePooling2D(2, 2),
+      Conv2D(128, (3, 3), activation='silu'),
+      AveragePooling2D(2, 2),
+      Dropout(0.3),
+      Conv2D(128, (3, 3), activation='silu'),
+      BatchNormalization(),
+      AveragePooling2D(2, 2),
+      Dropout(0.3),
+      Conv2D(128, (3, 3), activation='silu'),
+      BatchNormalization(),
+      AveragePooling2D(2, 2),
+      Conv2D(128, (3, 3), activation='silu'),
+      Dropout(0.3),
+      AveragePooling2D(2, 2),
+      Flatten(),
+      Dropout(0.3),
+      Dense(1024, activation='silu'),
+      BatchNormalization(),
+      Dense(13, activation='softmax')
+      ])
+      model.load_weights(os.path.expanduser("/content/model_weights11.h5"))
+
+      model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Train the model
+      hist = model.fit(train_dataset, validation_data=test_dataset, epochs=25,callbacks=[reduce_lr])
+
+
+
+
+      current_dir = os.getcwd()
+      weights_file = os.path.join(current_dir, 'model_weights7.h5')
+      model.save_weights(weights_file)
+
+      acc = hist.history['accuracy']
+      val_acc = hist.history['val_accuracy']
+      epochs = range(1, len(acc) + 1)
+
+      plt.plot(epochs, acc, '-', label='Training Accuracy')
+      plt.plot(epochs, val_acc, ':', label='Validation Accuracy')
+      plt.title('Training and Validation Accuracy')
+      plt.xlabel('Epoch')
+      plt.ylabel('Accuracy')
+      plt.legend(loc='lower right')
+      plt.show()
