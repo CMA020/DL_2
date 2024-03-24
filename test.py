@@ -84,7 +84,7 @@ if __name__ == '__main__':
     cnn_model = create_model()
     cnn_model.load_weights(os.path.expanduser("/content/model_weights2.h5"))
     cnn_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    parent_dir = os.path.expanduser('/content/drive/MyDrive/Project/spectrograms/val')
+    parent_dir = os.path.expanduser('/content/drive/MyDrive/Project/spectrograms/val')  ##### add test directory  path
     os.makedirs("~/DL_1/Test2")
     output_dir = os.path.expanduser("~/DL_1/Test2")
 
@@ -112,7 +112,7 @@ if __name__ == '__main__':
                                                     class_mode='categorical')
 
     predictions = cnn_model.predict(val_generator)
-    with open(os.path.expanduser('/content/drive/MyDrive/1.csv'), mode='w', newline='') as file:
+    with open(os.path.expanduser('/content/drive/MyDrive/1.csv'), mode='w', newline='') as file:    ###W add csv file path 
         writer = csv.writer(file)
 
         # Write header row
