@@ -25,7 +25,7 @@ def generate_spectrogram(audio_path, output_dir):
     filename = os.path.splitext(os.path.basename(audio_path))[0]
     plt.savefig(os.path.join(output_dir, f'{filename}_spectrogram.png'))
     plt.close()
-gc.collect()
+    gc.collect()
 
 
 

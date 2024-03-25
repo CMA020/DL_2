@@ -24,28 +24,26 @@ import csv
 from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
 def generate_spectrogram(audio_path, output_dir):
     # Load the audio file
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+
     y, sr = librosa.load(audio_path)
-
-    # Create the spectrogram
-    D = librosa.amplitude_to_db(librosa.stft(y), ref=np.max)
-
-    # Plot the spectrogram
-    plt.figure(figsize=(10, 5))
-    librosa.display.specshow(D, sr=sr, x_axis='time', y_axis='linear')
-    plt.colorbar(format='%+2.0f dB')
-    plt.title('Spectrogram')
-    plt.xlabel('Time')
-    plt.ylabel('Frequency')
-    plt.tight_layout()
+    ms = librosa.feature.melspectrogram(y, sr=sr)
+    log_ms = librosa.power_to_db(ms, ref=np.max)
+    librosa.display.specshow(log_ms, sr=sr)
 
     # Save the spectrogram as an image
     filename = os.path.splitext(os.path.basename(audio_path))[0]
-    input_extension = os.path.splitext(os.path.basename(audio_path))[1]
-    output_filename = f'{filename}{input_extension}.png'
-    plt.savefig(os.path.join(output_dir, output_filename))
-    plt.close()
 
-gc.collect()
+    input_extension = os.path.splitext(os.path.basename(audio_path))[1]
+
+    output_filename = f'{filename}{input_extension}.png'
+    fig.savefig(os.path.join(output_dir, output_filename))
+
+    gc.collect()
+
+
 
 
 def create_model():
@@ -89,29 +87,15 @@ if __name__ == '__main__':
     output_dir = os.path.expanduser("~/DL_1/Test2")
 
     # Iterate over directories inside the parent directory
-    for folder_name in os.listdir(parent_dir):
-        folder_path = os.path.join(parent_dir, folder_name)
-        os.makedirs(os.path.join(output_dir, folder_name))
-        if os.path.isdir(folder_path):
-            print(f"Folder Name: {folder_name}")
+    for audio_file in os.listdir(parent_dir):
 
-            for audio_file in os.listdir(folder_path):
-                if audio_file.endswith('.wav') or audio_file.endswith('.mp3') or audio_file.endswith(
-                        '.aiff') or audio_file.endswith('.flac') or audio_file.endswith('.ogg') or audio_file.endswith(
-                    '.m4a'):
-                    audio_path = os.path.join(folder_path, audio_file)
-                    generate_spectrogram(audio_path, os.path.join(output_dir, folder_name))
+        if audio_file.endswith('.wav') or audio_file.endswith('.mp3') or audio_file.endswith(
+                '.aiff') or audio_file.endswith('.flac') or audio_file.endswith('.ogg') or audio_file.endswith(
+            '.m4a'):
+            audio_path = os.path.join(parent_dir, audio_file)
+            generate_spectrogram(audio_path, output_dir)
 
-    # validation_datset_path=output_dir
-    # val_datagen = ImageDataGenerator(rescale=1.0 / 255)
-    #
-    # val_generator = val_datagen.flow_from_directory(validation_datset_path,
-    #                                                 shuffle=False,
-    #                                                 batch_size=BATCH_SIZE,
-    #                                                 target_size=(IMG_WIDTH, IMG_HEIGHT),
-    #                                                 class_mode='categorical')
-    #
-    # predictions = cnn_model.predict(val_generator)
+
     with open(os.path.expanduser('/content/drive/MyDrive/1.csv'), mode='w', newline='') as file:    ###W add csv file path
         writer = csv.writer(file)
 
@@ -137,8 +121,9 @@ if __name__ == '__main__':
 
                     # Perform inference
                     single_prediction = cnn_model.predict(input_data)
+                    print(single_prediction)
                     predictions = np.argmax(single_prediction, axis=1)
-                    print(dict[str(int(predictions))])
+                    #print(dict[str(int(predictions))])
                     file_name = audio_file.replace('.png', '')
 
                     # Write the file name and prediction to the CSV file
