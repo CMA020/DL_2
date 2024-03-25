@@ -75,28 +75,7 @@ def create_model():
         BatchNormalization(),
         Dense(13, activation='softmax')
     ])
-    # model = Sequential([
-    #     Conv2D(32, (3, 3), activation='relu', input_shape=(320, 240, 3)),
-    #     AveragePooling2D(2, 2),
-    #     Conv2D(128, (3, 3), activation='relu'),
-    #     AveragePooling2D(2, 2),
-    #     Dropout(0.3),
-    #     Conv2D(128, (3, 3), activation='relu'),
-    #     BatchNormalization(),
-    #     AveragePooling2D(2, 2),
-    #     Dropout(0.3),
-    #     Conv2D(128, (3, 3), activation='relu'),
-    #     BatchNormalization(),
-    #     AveragePooling2D(2, 2),
-    #     Conv2D(128, (3, 3), activation='relu'),
-    #     Dropout(0.3),
-    #     AveragePooling2D(2, 2),
-    #     Flatten(),
-    #     Dropout(0.3),
-    #     Dense(1024, activation='relu'),
-    #     BatchNormalization(),
-    #     Dense(13, activation='softmax')
-    # ])
+
 
     return model
 
@@ -110,32 +89,18 @@ if __name__ == '__main__':
     output_dir2=os.path.expanduser(os.path.join(current_dir,"Test"))
     os.makedirs(output_dir2)
     for filename  in os.listdir(parent_dir):
-
-
         input_file = os.path.join(parent_dir,  filename)
         ext = os.path.splitext(filename)[1].lower()
-
-        # If the file is a WAV file, copy it to the output directory
         if ext == ".wav":
             output_file = os.path.join(output_dir2, filename+".wav")
             shutil.copy(input_file, output_file)
-            #print(f"Copied {filename} to {os.path.basename(output_file)}")
 
-        # If the file is an MP3 or AIFF file, convert it to WAV and write to the output directory
         elif ext in [".mp3", ".aiff"]:
             output_file = os.path.join(output_dir2,  filename + ".wav")
             convert_audio(input_file, output_file)
-            #print(f"Converted {filename} to {os.path.basename(output_file)}")
-
-        # Skip other file types
-
-
-
-
 
     os.makedirs(os.path.join(current_dir,"Test2"))
     output_dir = os.path.expanduser(os.path.join(current_dir,"Test2"))
-
 
     for audio_file in os.listdir(output_dir2):
 
@@ -144,8 +109,6 @@ if __name__ == '__main__':
             '.m4a'):
             audio_path = os.path.join(output_dir2, audio_file)
             generate_spectrogram(audio_path, output_dir)
-
-
     with open(os.path.expanduser('~/DL_1/1.csv'), mode='w', newline='') as file:    ###W add csv file path (absolute)
         writer = csv.writer(file)
 

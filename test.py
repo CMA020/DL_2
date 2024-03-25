@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import cv2
 import os
 import gc
+from pydub import AudioSegment
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import warnings
 warnings.filterwarnings('ignore')
@@ -43,7 +44,12 @@ def generate_spectrogram(audio_path, output_dir):
 
     gc.collect()
 
+def convert_audio(input_file, output_file):
+    # Load the audio file
+    audio = AudioSegment.from_file(input_file)
 
+    # Export the audio as a WAV file
+    audio.export(output_file, format="wav")
 
 
 def create_model():
