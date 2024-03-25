@@ -30,6 +30,11 @@ from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.regularizers import l2
 import csv
 from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
+
+TEST_DATA_DIRECTORY_ABSOLUTE_PATH = os.path.expanduser("~/DL_1/audio_dataset/val/Fart")   ###################
+OUTPUT_CSV_ABSOLUTE_PATH = os.path.expanduser('~/DL_1/1.csv')     ###############
+
+
 def generate_spectrogram(audio_path, output_dir):
     # Load the audio file
     fig = plt.figure()
@@ -86,8 +91,7 @@ def create_model():
     return model
 
 dict={'0': 12, '1': 3 , '2':11,'3':13 , '4':4 , '5':5 , '6':1 , '7':7 , '8':10 , '9':2 , '10':8 , '11':6 , '12':9  }
-TEST_DATA_DIRECTORY_ABSOLUTE_PATH = os.path.expanduser("~/DL_1/audio_dataset/val/Fart")
-OUTPUT_CSV_ABSOLUTE_PATH = os.path.expanduser('~/DL_1/1.csv')
+
 
 
 # The above two variables will be changed during testing. The current values are an example of what their contents would look like.
