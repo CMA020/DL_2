@@ -131,6 +131,7 @@ def evaluate(file_path):
         audio_path = os.path.join(output_dir, audio_file)
         print(audio_path)
         img = cv2.imread(audio_path)
+        print(img.shape)
         img = cv2.resize(img, (240, 320))
         # Preprocess th audio file (e.g., compute spectrogram)
         preprocessed_data = tf.cast(img, tf.float32) / 255.0
